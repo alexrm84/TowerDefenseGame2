@@ -3,10 +3,11 @@ package com.geekbrains.td;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+
+//    Игровое окно.
 
 public class GameScreen implements Screen {
     private SpriteBatch batch;
@@ -27,6 +28,8 @@ public class GameScreen implements Screen {
         this.batch = batch;
         this.camera = camera;
     }
+
+//    Инициализация объектов
 
     @Override
     public void show() {
@@ -65,6 +68,8 @@ public class GameScreen implements Screen {
         particleEmitter.checkPool();
     }
 
+//    Создание интерфейса который считывает события ввода.
+
     public void prepare() {
         mousePosition = new Vector2(0, 0);
         InputProcessor myProc = new InputAdapter() {
@@ -80,6 +85,8 @@ public class GameScreen implements Screen {
         // InputMultiplexer im = new InputMultiplexer(stage, myProc);
         Gdx.input.setInputProcessor(myProc);
     }
+
+//
 
     @Override
     public void resize(int width, int height) {

@@ -65,7 +65,7 @@ public class Assets {
         assetManager.load("fonts/zorque" + size + ".ttf", BitmapFont.class, fontParameter);
     }
 
-//    Привязка атласа после загрузки других данных, исключает ошибку привязки пустого атласа.
+//    Привязка атласа для посзагрузки текстур, исключает ошибку запроса региона из пустого атласа.
 
     public void makeLinks() {
         textureAtlas = assetManager.get("images/game.pack", TextureAtlas.class);
