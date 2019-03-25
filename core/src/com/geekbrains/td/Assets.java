@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 
-//    Класс содержащий все имеющиеся ресурсы. Упрощает вызов и очистку.
+//    Класс содержащий все имеющиеся ресурсы, является синглтоном. Упрощает вызов и очистку.
 
 public class Assets {
     private static final Assets ourInstance = new Assets();

@@ -8,9 +8,13 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+//    Окно загрузки.
+
 public class LoadingScreen implements Screen {
     private SpriteBatch batch;
     private Texture texture;
+
+//    Полоса загрузки
 
     public LoadingScreen(SpriteBatch batch) {
         this.batch = batch;
@@ -34,7 +38,7 @@ public class LoadingScreen implements Screen {
             ScreenManager.getInstance().goToTarget();
         }
         batch.begin();
-        batch.draw(texture, 0, 0, 1280 * Assets.getInstance().getAssetManager().getProgress(), 40);
+        batch.draw(texture, 0, 0, 1280 * Assets.getInstance().getAssetManager().getProgress(), 40); //Заполняем полосу согласно загруженных данных.
         batch.end();
     }
 

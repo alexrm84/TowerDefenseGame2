@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+//    Менеджер экранов, является синглтоном. Содержит методы управления экранами.
+
 public class ScreenManager {
     public enum ScreenType {
         GAME
@@ -51,11 +53,15 @@ public class ScreenManager {
         viewport.apply();
     }
 
+//    Точка по которой центрируется отображение на экране. (дефолтное состояние)
+
     public void resetCamera() {
         camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);
         camera.update();
         batch.setProjectionMatrix(camera.combined);
     }
+
+//    Переход в выбранное окно. Очистка текущего окна и загрузка нового.
 
     public void changeScreen(ScreenType type) {
         Screen screen = game.getScreen();
