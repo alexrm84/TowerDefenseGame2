@@ -5,6 +5,9 @@ import com.badlogic.gdx.utils.Pool;
 import java.util.ArrayList;
 import java.util.List;
 
+//    Класс содержащий наши объекты.
+//    Состоит из 2х списков объектов, актывный и неактивный, а также методов управления этими списками (перенос объектов).
+
 public abstract class ObjectPool<T extends Poolable> {
     protected List<T> activeList;
     protected List<T> freeList;
