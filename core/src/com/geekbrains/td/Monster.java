@@ -25,6 +25,7 @@ public class Monster implements Poolable {
     private int hp;
     private int hpMax;
     private int theCost;
+    private int damage;
 
     private boolean active;
 
@@ -48,6 +49,7 @@ public class Monster implements Poolable {
         this.hpMax = 100;
         this.hp = this.hpMax;
         this.theCost = 50;
+        this.damage = 200;
         this.active = false;
     }
 
@@ -90,13 +92,18 @@ public class Monster implements Poolable {
     public void update(float dt) {
         velocity.set(destination).sub(position).nor().scl(100.0f);
         position.mulAdd(velocity, dt);
+        if (position.x<45){
+            this.active = false;
+            Hero.getInstance().setHp(Hero.getInstance().getHp()-this.damage);
+        }
         for (int i = 0; i < gameScreen.getBulletEmitter().activeList.size(); i++) {
             if (this.position.dst(gameScreen.getBulletEmitter().activeList.get(i).getPosition()) < 30){
                 gameScreen.getBulletEmitter().activeList.get(i).deactivate();
                 this.hp -= gameScreen.getBulletEmitter().activeList.get(i).getDamage();
                 if (this.hp<=0){
                     this.active = false;
-                    gameScreen.setScore(gameScreen.getScore()+this.theCost);
+                    Hero.getInstance().setScore(Hero.getInstance().getScore()+this.theCost);
+                    Hero.getInstance().setGold(Hero.getInstance().getGold()+theCost*2);
                 }
             }
         }

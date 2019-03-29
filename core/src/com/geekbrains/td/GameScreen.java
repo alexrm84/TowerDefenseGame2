@@ -23,15 +23,11 @@ public class GameScreen implements Screen {
     private int selectedCellX, selectedCellY;
     private BitmapFont font24;
     private float monsterTimer;
-    private int score;
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
+//    private Hero hero;
+//
+//    public Hero getHero() {
+//        return hero;
+//    }
 
     public Map getMap(){return map;}
 
@@ -85,7 +81,6 @@ public class GameScreen implements Screen {
         this.monsterEmitter = new MonsterEmitter(this);
         this.turret = new Turret(this);
         this.selectedCellTexture = Assets.getInstance().getAtlas().findRegion("cursor");
-
     }
 
     @Override
@@ -103,7 +98,9 @@ public class GameScreen implements Screen {
         turret.render(batch);
         bulletEmitter.render(batch);
         particleEmitter.render(batch);
-        font24.draw(batch, "SCORE: " + score, 20, 700);
+        font24.draw(batch, "HP: " + Hero.getInstance().getHp(), 20, 700);
+        font24.draw(batch, "SCORE: " + Hero.getInstance().getScore(), 130, 700);
+        font24.draw(batch, "GOLD: " + Hero.getInstance().getGold(), 250, 700);
         batch.end();
     }
 
