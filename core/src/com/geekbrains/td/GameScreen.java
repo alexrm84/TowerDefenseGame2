@@ -25,6 +25,14 @@ public class GameScreen implements Screen {
     private float monsterTimer;
     private int score;
 
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
     public Map getMap(){return map;}
 
 

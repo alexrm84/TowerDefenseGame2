@@ -29,7 +29,7 @@ public class Turret {
         this.position = new Vector2(cellX * 80 + 40, cellY * 80 + 40);
         this.rotationSpeed = 180.0f;
         this.target = null;
-        this.fireRadius = 100.0f;
+        this.fireRadius = 300.0f;
         this.tmp = new Vector2(0, 0);
         this.fireRate = 0.4f;
         this.fireTime = 0.0f;
@@ -44,7 +44,7 @@ public class Turret {
             target = null;
         }
         if (target == null) {
-            float maxDst = 10000.0f;
+            float maxDst = fireRadius+50;
             for (int i = 0; i < gameScreen.getMonsterEmitter().getActiveList().size(); i++) {
                 Monster m = gameScreen.getMonsterEmitter().getActiveList().get(i);
                 float dst = position.dst(m.getPosition());

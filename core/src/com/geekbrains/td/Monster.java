@@ -3,6 +3,7 @@ package com.geekbrains.td;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
@@ -23,6 +24,7 @@ public class Monster implements Poolable {
 
     private int hp;
     private int hpMax;
+    private int theCost;
 
     private boolean active;
 
@@ -45,6 +47,7 @@ public class Monster implements Poolable {
         this.velocity = new Vector2(0, 0);
         this.hpMax = 100;
         this.hp = this.hpMax;
+        this.theCost = 50;
         this.active = false;
     }
 
@@ -87,6 +90,17 @@ public class Monster implements Poolable {
     public void update(float dt) {
         velocity.set(destination).sub(position).nor().scl(100.0f);
         position.mulAdd(velocity, dt);
+        for (int i = 0; i < gameScreen.getBulletEmitter().activeList.size(); i++) {
+            if (this.position.dst(gameScreen.getBulletEmitter().activeList.get(i).getPosition()) < 30){
+                gameScreen.getBulletEmitter().activeList.get(i).deactivate();
+                this.hp -= gameScreen.getBulletEmitter().activeList.get(i).getDamage();
+                if (this.hp<=0){
+                    this.active = false;
+                    gameScreen.setScore(gameScreen.getScore()+this.theCost);
+                }
+            }
+        }
+
         if (position.dst(destination) < 2.0f) {
             getNextPoint();
         }
