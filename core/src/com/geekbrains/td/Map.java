@@ -2,7 +2,6 @@ package com.geekbrains.td;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import java.io.BufferedReader;
@@ -16,22 +15,46 @@ public class Map {
 
     private final int ELEMENT_GRASS = 0;
     private final int ELEMENT_ROAD = 1;
+    private final int ELEMENT_WALL = 2;
 
     private byte[][] data;
     private TextureRegion textureRegionGrass;
     private TextureRegion textureRegionRoad;
-//    private TextureRegion textureRegionCursor;
 
-    private int selectedX = 0;
-    private int selectedY = 0;
+    public byte[][] getData() {
+        return data;
+    }
+
+    public int getMAP_WIDTH() {
+        return MAP_WIDTH;
+    }
+
+    public int getMAP_HEIGHT() {
+        return MAP_HEIGHT;
+    }
 
     public Map(String mapName) {
         data = new byte[MAP_WIDTH][MAP_HEIGHT];
         textureRegionGrass = Assets.getInstance().getAtlas().findRegion("grass");
         textureRegionRoad = Assets.getInstance().getAtlas().findRegion("road");
-//        textureRegionCursor = Assets.getInstance().getAtlas().findRegion("cursor");
         loadMapFromFile(mapName);
     }
+
+    public boolean isCellEmpty(int cellX, int cellY) {
+        if (cellX==-1 || cellX==MAP_WIDTH || cellY==-1 || cellY==MAP_HEIGHT){
+            return false;
+        }
+        int value = data[cellX][cellY];
+        if (value == ELEMENT_GRASS || value == ELEMENT_ROAD) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setWall(int cx, int cy) {
+        data[cx][cy] = ELEMENT_WALL;
+    }
+
 
     public void render(SpriteBatch batch) {
         for (int i = 0; i < MAP_WIDTH; i++) {
@@ -42,18 +65,16 @@ public class Map {
                 if (data[i][j] == ELEMENT_ROAD) {
                     batch.draw(textureRegionRoad, i * 80, j * 80);
                 }
+                if (data[i][j] == ELEMENT_WALL) {
+                    batch.setColor(0, 0, 0, 1);
+                    batch.draw(textureRegionRoad, i * 80, j * 80);
+                    batch.setColor(1, 1, 1, 1);
+                }
             }
         }
-//        batch.setColor(1,1,1,0.4f);
-//        batch.draw(textureRegionCursor, selectedX * 80, selectedY * 80);
-//        batch.setColor(1,1,1,1);
     }
 
     public void update(float dt) {
-        if (Gdx.input.justTouched()) {
-            selectedX = Gdx.input.getX() / 80;
-            selectedY = (720 - Gdx.input.getY()) / 80;
-        }
     }
 
     public void loadMapFromFile(String mapName) {
@@ -67,6 +88,9 @@ public class Map {
                     char symb = str.charAt(j);
                     if (symb == '1') {
                         data[j][8 - i] = ELEMENT_ROAD;
+                    }
+                    if (symb == '2') {
+                        data[j][8 - i] = ELEMENT_WALL;
                     }
                 }
             }
