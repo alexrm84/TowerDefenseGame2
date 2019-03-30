@@ -96,6 +96,10 @@ public class Monster implements Poolable {
             this.active = false;
             Hero.getInstance().setHp(Hero.getInstance().getHp()-this.damage);
         }
+        if (Hero.getInstance().getHp()<=0){
+            gameScreen.show();
+            Hero.getInstance().restart();
+        }
         for (int i = 0; i < gameScreen.getBulletEmitter().activeList.size(); i++) {
             if (this.position.dst(gameScreen.getBulletEmitter().activeList.get(i).getPosition()) < 30){
                 gameScreen.getBulletEmitter().activeList.get(i).deactivate();

@@ -17,6 +17,12 @@ public class Hero {
         this.gold = 0;
     }
 
+    public void restart(){
+        this.hp = 1000;
+        this.score = 0;
+        this.gold = 0;
+    }
+
     public int getGold() {
         return gold;
     }
