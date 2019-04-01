@@ -13,6 +13,7 @@ import java.util.*;
 public class Monster implements Poolable {
     private GameScreen gameScreen;
     private Map map;
+    private Hero hero;
 
     private TextureRegion texture;
     private TextureRegion textureHp;
@@ -29,6 +30,11 @@ public class Monster implements Poolable {
 
     private boolean active;
 
+    private int[][] mass;
+    private Queue<PointOfTheWay> wave;
+    private int nextStepX, nextStepY;
+
+
     @Override
     public boolean isActive() {
         return active;
@@ -36,6 +42,14 @@ public class Monster implements Poolable {
 
     public Vector2 getPosition() {
         return position;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public int getTheCost() {
+        return theCost;
     }
 
     public Monster(GameScreen gameScreen) {
@@ -51,6 +65,9 @@ public class Monster implements Poolable {
         this.theCost = 50;
         this.damage = 200;
         this.active = false;
+        this.hero = gameScreen.getHero();
+        this.mass = new int[map.getMAP_WIDTH()][map.getMAP_HEIGHT()];
+        this.wave = new LinkedList<>();
     }
 
     public void activate(float x, float y) {
@@ -64,60 +81,58 @@ public class Monster implements Poolable {
         this.active = true;
     }
 
+    public void deactivate(){
+        this.active = false;
+    }
+
     public void getNextPoint() {
-//        List<Vector2> path = new ArrayList<>();
-//        path.add(position);
-//        for (int i = 0; i < 5; i++) {
-//            Vector2 tmp = path.get(path.size() - 1);
-//            int tmpCX = (int) (tmp.x / 80);
-//            int tmpCY = (int) (tmp.y / 80);
-//            if (tmpCX > 0 && map.isCellEmpty(tmpCX - 1, tmpCY)) {
-//                path.add(new Vector2((tmpCX - 1) * 80 + 40, tmpCY * 80 + 40));
-//            } else if (tmpCY < 8 && map.isCellEmpty(tmpCX, tmpCY + 1)) {
-//                path.add(new Vector2(tmpCX * 80 + 40, (tmpCY + 1) * 80 + 40));
-//            } else if (tmpCY > 0 && map.isCellEmpty(tmpCX, tmpCY - 1)) {
-//                path.add(new Vector2(tmpCX * 80 + 40, (tmpCY - 1) * 80 + 40));
-//            } else {
-//                path.add(tmp);
-//            }
-//        }
-//        destination.set(path.get(1));
-        destination.set(waveMethod((int)position.x/80, (int)position.y/80,(int)Hero.getInstance().getPosition().x/80,(int)Hero.getInstance().getPosition().y/80));
+        for (int i = 0; i < map.getMAP_WIDTH(); i++) {
+            for (int j = 0; j < map.getMAP_HEIGHT(); j++) {
+                mass[i][j] = 0;
+//                if (!map.isCellEmpty(i,j)){
+//                    mass[i][j] = -1;
+//                }
+            }
+        }
+        wave.clear();
+        nextStepX = 0;
+        nextStepY = 0;
+        destination.set(waveMethod((int)hero.getPosition().x/80,(int)hero.getPosition().y/80, (int)position.x/80, (int)position.y/80));
     }
 
     private Vector2 waveMethod(int sourceX, int sourceY, int destX, int destY){
-        int[][] mass = new int[map.getMAP_WIDTH()][map.getMAP_HEIGHT()];
-        Queue<PointOfTheWay> wave = new LinkedList<>();
         wave.add(new PointOfTheWay(sourceX,sourceY,null,0));
         PointOfTheWay checkDest=null;
-        PointOfTheWay current=null;
+//        boolean checkDest = false;
         while (!wave.isEmpty()){
             if (wave.peek().getX()==destX && wave.peek().getY()==destY){
                 checkDest = wave.peek();
+//                checkDest = true;
                 break;
             }
-            cellsCheck(wave.peek().getX(), wave.peek().getY(), mass, wave);
+            cellsCheck(wave.peek().getX(), wave.peek().getY());
             wave.poll();
         }
-        if (checkDest!=null){
-            current = checkDest;
-            while (current.getPrevious().getPrevious()!=null){
-                current = current.getPrevious();
-            }
-        }
-        return current!=null ? new Vector2(current.getX()*80+40,current.getY()*80+40) : new Vector2(sourceX*80+40, sourceY*80+40);
+        return checkDest!=null ? new Vector2(checkDest.getPrevious().getX()*80+40,checkDest.getPrevious().getY()*80+40) : new Vector2(destX*80+40, destY*80+40);
+//        return checkDest ? new Vector2(nextStepX*80+40,nextStepY*80+40) : new Vector2(destX*80+40, destY*80+40);
     }
 
-    private void cellsCheck(int x, int y, int[][] mass, Queue<PointOfTheWay> wave){
-        for (int i = -1; i < 2 ; i++) {
-            for (int j = -1; j < 2; j++) {
-                if (Math.abs(i+j)==1){
-                    if (map.isCellEmpty(x+i,y+j) && mass[x+i][y+j]==0){
-                        mass[x+i][y+j] = mass[x][y] +1;
-                        wave.offer(new PointOfTheWay(x+i, y+j, wave.peek(), mass[x+i][y+j]));
-                    }
-                }
-            }
+    private void cellsCheck(int x, int y){
+        if (map.isCellEmpty(x,y+1) && mass[x][y+1]==0){
+            wave.offer(new PointOfTheWay(x,y+1, wave.peek(), mass[x][y+1]=mass[x][y]+1));
+            mass[x][y+1]=mass[x][y]+1;
+        }
+        if (map.isCellEmpty(x,y-1) && mass[x][y-1]==0){
+            wave.offer(new PointOfTheWay(x, y-1, wave.peek(), mass[x][y-1]=mass[x][y]+1));
+            mass[x][y-1]=mass[x][y]+1;
+        }
+        if (map.isCellEmpty(x+1,y) && mass[x+1][y]==0){
+            wave.offer(new PointOfTheWay(x+1, y, wave.peek(), mass[x+1][y]=mass[x][y]+1));
+            mass[x+1][y]=mass[x][y]+1;
+        }
+        if (map.isCellEmpty(x-1,y) && mass[x-1][y]==0){
+            wave.offer(new PointOfTheWay(x-1, y, wave.peek(), mass[x-1][y]=mass[x][y]+1));
+            mass[x-1][y]=mass[x][y]+1;
         }
     }
 
@@ -126,29 +141,18 @@ public class Monster implements Poolable {
         batch.draw(textureHp, position.x - 40, position.y + 40 - 12, 56 * ((float) hp / hpMax), 12);
     }
 
+    public void takeDamage(int damage){
+        this.hp-=damage;
+        if (this.getHp()<=0){
+            this.deactivate();;
+            hero.setScore(hero.getScore()+this.theCost);
+            hero.setGold(hero.getGold()+this.theCost*2);
+        }
+    }
+
     public void update(float dt) {
         velocity.set(destination).sub(position).nor().scl(100.0f);
         position.mulAdd(velocity, dt);
-        if (position.dst(Hero.getInstance().getPosition())<5){
-            this.active = false;
-            Hero.getInstance().setHp(Hero.getInstance().getHp()-this.damage);
-        }
-        if (Hero.getInstance().getHp()<=0){
-            gameScreen.show();
-            Hero.getInstance().restart();
-        }
-        for (int i = 0; i < gameScreen.getBulletEmitter().activeList.size(); i++) {
-            if (this.position.dst(gameScreen.getBulletEmitter().activeList.get(i).getPosition()) < 30){
-                gameScreen.getBulletEmitter().activeList.get(i).deactivate();
-                this.hp -= gameScreen.getBulletEmitter().activeList.get(i).getDamage();
-                if (this.hp<=0){
-                    this.active = false;
-                    Hero.getInstance().setScore(Hero.getInstance().getScore()+this.theCost);
-                    Hero.getInstance().setGold(Hero.getInstance().getGold()+theCost*2);
-                }
-            }
-        }
-
         if (position.dst(destination) < 2.0f) {
             getNextPoint();
         }

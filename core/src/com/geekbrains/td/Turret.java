@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-public class Turret {
+public class Turret implements Poolable{
     private GameScreen gameScreen;
 
     private TextureRegion texture;
@@ -15,6 +15,7 @@ public class Turret {
     private float angle;
     private float rotationSpeed;
     private float fireRadius;
+    private boolean active;
 
     private float fireRate;
     private float fireTime;
@@ -33,6 +34,27 @@ public class Turret {
         this.tmp = new Vector2(0, 0);
         this.fireRate = 0.4f;
         this.fireTime = 0.0f;
+        this.active = false;
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setup(int cellX, int cellY){
+        this.cellX = cellX;
+        this.cellY = cellY;
+        this.position.set(cellX * 80 + 40, cellY * 80 + 40);
+        this.active = true;
+    }
+
+    public int getCellX() {
+        return cellX;
+    }
+
+    public int getCellY() {
+        return cellY;
     }
 
     public void render(SpriteBatch batch) {
@@ -40,15 +62,17 @@ public class Turret {
     }
 
     public void update(float dt) {
-        if (target != null && !checkMonsterInRange(target)) {
-            target = null;
+        if (target != null){
+            if (!checkMonsterInRange(target) || ! target.isActive()) {
+                target = null;
+            }
         }
         if (target == null) {
             float maxDst = fireRadius+50;
             for (int i = 0; i < gameScreen.getMonsterEmitter().getActiveList().size(); i++) {
                 Monster m = gameScreen.getMonsterEmitter().getActiveList().get(i);
                 float dst = position.dst(m.getPosition());
-                if (dst < maxDst) {
+                if (dst < fireRadius && dst < maxDst) {
                     target = m;
                     maxDst = dst;
                 }
@@ -97,9 +121,11 @@ public class Turret {
     public void tryToFire(float dt) {
         fireTime += dt;
         if (fireTime > fireRate) {
-            fireTime = 0.0f;
+            fireTime = 0.2f;
             float rad = (float)Math.toRadians(angle);
-            gameScreen.getBulletEmitter().setup(position.x, position.y, 250.0f * (float)Math.cos(rad), 250.0f * (float)Math.sin(rad));
+            gameScreen.getBulletEmitter().setup(position.x, position.y, 500.0f * (float)Math.cos(rad), 500.0f * (float)Math.sin(rad),target);
         }
     }
+
+
 }
