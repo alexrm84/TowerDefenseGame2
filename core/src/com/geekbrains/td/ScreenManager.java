@@ -44,7 +44,7 @@ public class ScreenManager {
         this.batch = batch;
         this.camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
         this.viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
-        this.gameScreen = new GameScreen(batch, camera);
+        this.gameScreen = new GameScreen(batch);
         this.loadingScreen = new LoadingScreen(batch);
     }
 

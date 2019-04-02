@@ -33,6 +33,10 @@ public class Map {
         return MAP_HEIGHT;
     }
 
+    public void restoreField(int cellX, int cellY){
+        data[cellX][cellY] = ELEMENT_GRASS;
+    }
+
     public Map(String mapName) {
         data = new byte[MAP_WIDTH][MAP_HEIGHT];
         textureRegionGrass = Assets.getInstance().getAtlas().findRegion("grass");
@@ -41,7 +45,7 @@ public class Map {
     }
 
     public boolean isCellEmpty(int cellX, int cellY) {
-        if (cellX==-1 || cellX==MAP_WIDTH || cellY==-1 || cellY==MAP_HEIGHT){
+        if (cellX<0 || cellX>=MAP_WIDTH || cellY<0 || cellY>=MAP_HEIGHT){
             return false;
         }
         int value = data[cellX][cellY];

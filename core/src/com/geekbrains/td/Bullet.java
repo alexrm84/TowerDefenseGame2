@@ -4,10 +4,15 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bullet implements Poolable {
 
+    private Monster target;
     private Vector2 position;
     private Vector2 velocity;
     private int damage;
     private boolean active;
+
+    public Monster getTarget() {
+        return target;
+    }
 
     public Vector2 getPosition() {
         return position;
@@ -36,10 +41,11 @@ public class Bullet implements Poolable {
         this.active = false;
     }
 
-    public void setup(float x, float y, float vx, float vy) {
+    public void setup(float x, float y, float vx, float vy, Monster target, int damage) {
+        this.target = target;
         this.position.set(x, y);
         this.velocity.set(vx, vy);
-        this.damage = 30;
+        this.damage = damage;
         this.active = true;
     }
 }
