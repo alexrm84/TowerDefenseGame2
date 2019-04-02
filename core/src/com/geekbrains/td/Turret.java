@@ -16,6 +16,9 @@ public class Turret implements Poolable{
     private float rotationSpeed;
     private float fireRadius;
     private boolean active;
+    private String type;
+    private int damage;
+    private int theCoast;
 
     private float fireRate;
     private float fireTime;
@@ -24,7 +27,6 @@ public class Turret implements Poolable{
 
     public Turret(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
-        this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets"), 0, 0, 80, 80);
         this.cellX = 8;
         this.cellY = 4;
         this.position = new Vector2(cellX * 80 + 40, cellY * 80 + 40);
@@ -32,9 +34,54 @@ public class Turret implements Poolable{
         this.target = null;
         this.fireRadius = 300.0f;
         this.tmp = new Vector2(0, 0);
-        this.fireRate = 0.4f;
+
         this.fireTime = 0.0f;
         this.active = false;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getTheCoast() {
+        return theCoast;
+    }
+
+    public void deactivate(){
+        this.active = false;
+    }
+
+    private void textureSelection(String type){
+        switch (type){
+            case "blue0":
+                this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets"), 80, 0, 80, 80);
+                this.fireRate = 1.4f;
+                this.damage = 70;
+                this.theCoast = 200;
+                break;
+            case "blue1":
+                this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets"), 80, 80, 80, 80);
+                this.fireRadius = 500.0f;
+                this.fireRate = 1.0f;
+                this.rotationSpeed = 220;
+                this.damage = 100;
+                this.theCoast = 400;
+                break;
+            case "red0":
+                this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets"), 0, 0, 80, 80);
+                this.fireRate = 0.4f;
+                this.damage = 10;
+                this.theCoast = 50;
+                break;
+            case "red1":
+                this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets"), 0, 80, 80, 80);
+                this.fireRadius = 500.0f;
+                this.fireRate = 0.2f;
+                this.rotationSpeed = 220;
+                this.damage = 20;
+                this.theCoast = 100;
+                break;
+        }
     }
 
     @Override
@@ -42,11 +89,17 @@ public class Turret implements Poolable{
         return active;
     }
 
-    public void setup(int cellX, int cellY){
+    public void setup(int cellX, int cellY, String type){
+        this.type = type;
+        textureSelection(type);
         this.cellX = cellX;
         this.cellY = cellY;
         this.position.set(cellX * 80 + 40, cellY * 80 + 40);
         this.active = true;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     public int getCellX() {
@@ -123,7 +176,7 @@ public class Turret implements Poolable{
         if (fireTime > fireRate) {
             fireTime = 0.2f;
             float rad = (float)Math.toRadians(angle);
-            gameScreen.getBulletEmitter().setup(position.x, position.y, 500.0f * (float)Math.cos(rad), 500.0f * (float)Math.sin(rad),target);
+            gameScreen.getBulletEmitter().setup(position.x, position.y, 500.0f * (float)Math.cos(rad), 500.0f * (float)Math.sin(rad),target, damage);
         }
     }
 

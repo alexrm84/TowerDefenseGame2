@@ -22,9 +22,9 @@ public class BulletEmitter extends ObjectPool<Bullet> {
         this.tmp = new Vector2(0, 0);
     }
 
-    public void setup(float x, float y, float vx, float vy, Monster target) {
+    public void setup(float x, float y, float vx, float vy, Monster target, int damage) {
         Bullet b = getActiveElement();
-        b.setup(target, x, y, vx, vy);
+        b.setup(x, y, vx, vy, target, damage);
     }
 
     public void render(SpriteBatch batch) {

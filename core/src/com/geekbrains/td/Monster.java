@@ -145,8 +145,8 @@ public class Monster implements Poolable {
         this.hp-=damage;
         if (this.getHp()<=0){
             this.deactivate();;
-            hero.setScore(hero.getScore()+this.theCost);
-            hero.setGold(hero.getGold()+this.theCost*2);
+            hero.increaseScore(this.theCost);
+            hero.increaseGold(this.theCost*2);
         }
     }
 

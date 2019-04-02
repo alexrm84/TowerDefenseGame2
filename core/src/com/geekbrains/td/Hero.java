@@ -43,17 +43,16 @@ public class Hero {
         return gold >= amount;
     }
 
-    public void decreaseCoins(int amount) {
-        this.gold -= amount;
+    public void decreaseGold(int gold) {
+        this.gold -= gold;
     }
 
+    public void increaseGold(int gold) {
+        this.gold += gold;
+    }
 
     public int getGold() {
         return gold;
-    }
-
-    public void setGold(int gold) {
-        this.gold = gold;
     }
 
     public int getHp() {
@@ -64,8 +63,8 @@ public class Hero {
         return score;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public void increaseScore(int score) {
+        this.score += score;
     }
 
     public void renderInfo(SpriteBatch batch, BitmapFont font){

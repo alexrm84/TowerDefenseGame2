@@ -164,30 +164,30 @@ public class GameScreen implements Screen {
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                setTurret();
+                setTurret("red0");
             }
         });
 
         btnSetTurret2.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                setTurret();
+                setTurret("blue0");
             }
         });
 
-//        btnDestroyTurret.addListener(new ChangeListener() {
-//            @Override
-//            public void changed(ChangeEvent event, Actor actor) {
-//                turretEmitter.destroyTurret(selectedCellX, selectedCellY);
-//            }
-//        });
-//
-//        btnUpgradeTurret.addListener(new ChangeListener() {
-//            @Override
-//            public void changed(ChangeEvent event, Actor actor) {
-//                turretEmitter.upgradeTurret(playerInfo, selectedCellX, selectedCellY);
-//            }
-//        });
+        btnDestroyTurret.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                destroyTurret(selectedCellX, selectedCellY);
+            }
+        });
+
+        btnUpgradeTurret.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                upgradeTurret(selectedCellX, selectedCellY);
+            }
+        });
 
         stage.addActor(groupTurretSelection);
         stage.addActor(groupTurretAction);
@@ -203,15 +203,43 @@ public class GameScreen implements Screen {
         skin.dispose();
     }
 
-    public void setTurret() {
-        if (hero.isMoneyEnough(50)) {
-            if (turretEmitter.setup(selectedCellX, selectedCellY)) {
-                hero.decreaseCoins(50);
-            }
+    private void upgradeTurret(int selectedCellX, int selectedCellY){
+        switch (turretEmitter.checkTheTurret(selectedCellX, selectedCellY)) {
+            case "red0":
+                if (hero.isMoneyEnough(turretEmitter.getTheCoast("red1"))) {
+                    turretEmitter.destroyTurret(selectedCellX, selectedCellY);
+                    map.restoreField(selectedCellX, selectedCellY);
+                    turretEmitter.setup(selectedCellX, selectedCellY, "red1");
+                    hero.decreaseGold(turretEmitter.getTheCoast("red1"));
+                }
+                break;
+            case "blue0":
+                if (hero.isMoneyEnough(turretEmitter.getTheCoast("blue1"))) {
+                    turretEmitter.destroyTurret(selectedCellX, selectedCellY);
+                    map.restoreField(selectedCellX, selectedCellY);
+                    turretEmitter.setup(selectedCellX, selectedCellY, "blue1");
+                    hero.decreaseGold(turretEmitter.getTheCoast("blue1"));
+                }
+                break;
+            default:
         }
     }
 
+    private void destroyTurret(int selectedCellX, int selectedCellY){
+        int theRemainder = turretEmitter.destroyTurret(selectedCellX, selectedCellY);
+        if (theRemainder>0){
+            hero.increaseGold(theRemainder);
+            map.restoreField(selectedCellX, selectedCellY);
+        }
+    }
 
+    public void setTurret(String type) {
+        if (hero.isMoneyEnough(turretEmitter.getTheCoast(type))) {
+            if (turretEmitter.setup(selectedCellX, selectedCellY, type)) {
+                hero.decreaseGold(turretEmitter.getTheCoast(type));
+            }
+        }
+    }
 
     public void checkCollisions() {
         for (int i = 0; i < bulletEmitter.getActiveList().size(); i++) {
