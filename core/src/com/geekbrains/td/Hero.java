@@ -31,10 +31,6 @@ public class Hero {
         this.hp-= damage;
     }
 
-    public int getMaxHP() {
-        return maxHP;
-    }
-
     public Vector2 getPosition() {
         return position;
     }
@@ -43,11 +39,7 @@ public class Hero {
         return gold >= amount;
     }
 
-    public void decreaseGold(int gold) {
-        this.gold -= gold;
-    }
-
-    public void increaseGold(int gold) {
+    public void changeGold(int gold) {
         this.gold += gold;
     }
 
@@ -63,7 +55,7 @@ public class Hero {
         return score;
     }
 
-    public void increaseScore(int score) {
+    public void changeScore(int score) {
         this.score += score;
     }
 
