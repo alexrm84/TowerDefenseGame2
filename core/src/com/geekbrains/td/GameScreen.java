@@ -147,9 +147,11 @@ public class GameScreen implements Screen {
         textButtonStyle.font = font24;
         skin.add("simpleSkin", textButtonStyle);
 
-        groupTurretAction = new Group();
-        groupTurretAction.setPosition(150, 620);
+        Button btnMenu = new TextButton("Menu", skin, "simpleSkin");
+        btnMenu.setPosition(150, 630);
 
+        groupTurretAction = new Group();
+        groupTurretAction.setPosition(240, 620);
         Button btnSetTurret = new TextButton("Set", skin, "simpleSkin");
         Button btnUpgradeTurret = new TextButton("Upg", skin, "simpleSkin");
         Button btnDestroyTurret = new TextButton("Dst", skin, "simpleSkin");
@@ -162,13 +164,21 @@ public class GameScreen implements Screen {
 
         groupTurretSelection = new Group();
         groupTurretSelection.setVisible(false);
-        groupTurretSelection.setPosition(150, 520);
+        groupTurretSelection.setPosition(240, 520);
         Button btnSetTurret1 = new TextButton("T1", skin, "simpleSkin");
         Button btnSetTurret2 = new TextButton("T2", skin, "simpleSkin");
         btnSetTurret1.setPosition(10, 10);
         btnSetTurret2.setPosition(110, 10);
         groupTurretSelection.addActor(btnSetTurret1);
         groupTurretSelection.addActor(btnSetTurret2);
+
+        btnMenu.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.MENU);
+
+            }
+        });
 
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
@@ -203,6 +213,7 @@ public class GameScreen implements Screen {
 
         stage.addActor(groupTurretSelection);
         stage.addActor(groupTurretAction);
+        stage.addActor(btnMenu);
 
 //        upperPanel = new UpperPanel(playerInfo, stage, 0, 720 - 60);
 
