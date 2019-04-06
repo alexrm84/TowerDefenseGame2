@@ -136,6 +136,7 @@ public class Monster implements Poolable {
         this.hp-=damage;
         if (this.hp<=0){
             this.deactivate();
+            gameScreen.getInfoEmitter().setup(position.x * 80 + 40, position.y * 80 + 40, "+" + theCost);
             return true;
         }
         return false;

@@ -33,6 +33,7 @@ public class GameScreen implements Screen {
     private float waveTimer;
     private float level = 0;
     private Hero hero;
+    private Player player;
     private Stage stage;
     private Group groupTurretAction;
     private Group groupTurretSelection;
@@ -40,6 +41,10 @@ public class GameScreen implements Screen {
 
     public Hero getHero() {
         return hero;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     public Map getMap(){return map;}
@@ -71,10 +76,12 @@ public class GameScreen implements Screen {
 //    Инициализация объектов
 //    Создание интерфейса который считывает события ввода.
 
+
     @Override
     public void show() {
-        this.hero = new Hero();
-        mousePosition = new Vector2(0, 0);
+        this.hero = new Hero(this);
+        this.player = new Player();
+        this.mousePosition = new Vector2(0, 0);
         this.particleEmitter = new ParticleEmitter();
         this.font24 = Assets.getInstance().getAssetManager().get("fonts/zorque24.ttf");
         this.bulletEmitter = new BulletEmitter(this);
@@ -104,7 +111,7 @@ public class GameScreen implements Screen {
         bulletEmitter.render(batch);
         particleEmitter.render(batch);
         hero.render(batch);
-        hero.renderInfo(batch, font24);
+        player.renderInfo(batch, font24);
         infoEmitter.render(batch, font24);
         batch.end();
         stage.draw();
@@ -121,7 +128,7 @@ public class GameScreen implements Screen {
         infoEmitter.update(dt);
         hero.update(dt);
 
-        nextLevel(dt);
+        nextLevel();
 
         monsterEmitter.checkPool();
         particleEmitter.checkPool();
@@ -196,7 +203,7 @@ public class GameScreen implements Screen {
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(hero, TurretType.RED, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(TurretType.RED, selectedCellX, selectedCellY);
 
             }
         });
@@ -204,14 +211,14 @@ public class GameScreen implements Screen {
         btnSetTurret2.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(hero, TurretType.BLUE, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(TurretType.BLUE, selectedCellX, selectedCellY);
             }
         });
 
         btnDestroyTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.removeTurret(hero, selectedCellX, selectedCellY);
+                turretEmitter.removeTurret(selectedCellX, selectedCellY);
 
             }
         });
@@ -219,7 +226,7 @@ public class GameScreen implements Screen {
         btnUpgradeTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.upgradeTurret(hero, selectedCellX, selectedCellY);
+                turretEmitter.upgradeTurret(selectedCellX, selectedCellY);
 
             }
         });
@@ -256,8 +263,8 @@ public class GameScreen implements Screen {
                 if (monster.getPosition().dst(bullet.getPosition()) < 50){
                     bullet.deactivate();
                     if (monster.takeDamage(bullet.getPower())) {
-                        hero.changeGold(monster.getTheCost());
-                        hero.changeScore(monster.getTheCost());
+                        player.changeGold(monster.getTheCost());
+                        player.changeScore(monster.getTheCost());
                         particleEmitter.getEffectBuilder().buildMonsterSplash(monster.getPosition().x, monster.getPosition().y);
                     }
                 }
@@ -289,10 +296,15 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void nextLevel(float dt){
+    public void nextLevel(){
         if (monsterWave > 5){
             level += 1;
-            this.show();
+            this.hero = new Hero(this);
+            this.bulletEmitter = new BulletEmitter(this);
+            this.map = new Map("level01.map");
+            this.monsterEmitter = new MonsterEmitter(this);
+            this.turretEmitter = new TurretEmitter(this);
+            this.monsterWave = 1;
         }
     }
 
