@@ -1,26 +1,67 @@
 package com.geekbrains.td;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class TurretEmitter extends ObjectPool<Turret> {
     private GameScreen gameScreen;
+    private TextureRegion[][] allTextures;
+    private Player player;
 
     public TurretEmitter(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
+        this.player = gameScreen.getPlayer();
+        this.allTextures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets")).split(80, 80);
     }
 
     @Override
     protected Turret newObject() {
-        return new Turret(gameScreen);
+        return new Turret(gameScreen, allTextures);
     }
 
-    public boolean setup(int cellX, int cellY, String type) {
+    public boolean setup(TurretType type, int cellX, int cellY) {
         if (!canIDeployItHere(cellX, cellY)) {
             return false;
         }
         Turret turret = getActiveElement();
-        turret.setup(cellX, cellY, type);
+        turret.setup(type, cellX, cellY);
         return true;
+    }
+
+    public void buildTurret(TurretType type, int cellX, int cellY){
+        if (player.isMoneyEnough(type.price)){
+            if (setup(type,cellX,cellY)){
+                player.changeGold(-type.price);
+                gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + type.price);
+            }
+        }
+    }
+
+    public void upgradeTurret(int cellX, int cellY){
+        Turret turretForUpgrade = findTurretInCell(cellX, cellY);
+        if (turretForUpgrade == null){
+            return;
+        }
+        TurretType nextLevel = turretForUpgrade.getType().child;
+        if (nextLevel == null){
+            gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "[ERROR] Top turret");
+            return;
+        }
+        if (player.isMoneyEnough(nextLevel.price)){
+            turretForUpgrade.setup(nextLevel, cellX, cellY);
+            player.changeGold(-nextLevel.price);
+            gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + nextLevel.price);
+        }
+    }
+
+    public void removeTurret(int cellX, int cellY){
+        Turret turretForDelete = findTurretInCell(cellX, cellY);
+        if (turretForDelete == null){
+            return;
+        }
+        turretForDelete.deactivate();
+        player.changeGold(turretForDelete.getType().destroyPrice);
+        gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "+" + turretForDelete.getType().destroyPrice);
     }
 
     public void render(SpriteBatch batch) {
@@ -35,55 +76,27 @@ public class TurretEmitter extends ObjectPool<Turret> {
         }
     }
 
-    public String checkTheTurret(int cellX, int cellY){
-        Turret t;
-        for (int i = 0; i < activeList.size(); i++) {
-            t = activeList.get(i);
-            if (t.getCellX() == cellX && t.getCellY() == cellY){
-                return t.getType();
-            }
-        }
-        return "";
-    }
-
-    public int destroyTurret(int cellX, int cellY){
-        Turret t;
-        for (int i = 0; i < activeList.size(); i++) {
-            t = activeList.get(i);
-            if (t.getCellX() == cellX && t.getCellY() == cellY){
-                t.deactivate();
-                return t.getTheCoast()/2;
-            }
-        }
-        return -1;
-    }
-
     public boolean canIDeployItHere(int cellX, int cellY) {
         if (!gameScreen.getMap().isCellEmpty(cellX, cellY)) {
             return false;
         }
-        Turret t;
+        Turret turret;
         for (int i = 0; i < activeList.size(); i++) {
-            t = activeList.get(i);
-            if (t.getCellX() == cellX && t.getCellY() == cellY) {
-                System.out.println("2");
+            turret = activeList.get(i);
+            if (turret.getCellX() == cellX && turret.getCellY() == cellY) {
                 return false;
             }
         }
         return true;
     }
 
-    public int getTheCoast(String type) {
-        switch (type){
-            case "blue0":
-                return 200;
-            case "blue1":
-                return 400;
-            case "red0":
-                return 50;
-            case "red1":
-                return 100;
+    public Turret findTurretInCell(int cellX, int cellY){
+        for (int i = 0; i < activeList.size(); i++) {
+            Turret turret = activeList.get(i);
+            if (turret.isActive() && turret.getCellX() == cellX && turret.getCellY() == cellY) {
+                return turret;
+            }
         }
-        return -1;
+        return null;
     }
 }

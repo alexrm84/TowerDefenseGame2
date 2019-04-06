@@ -22,9 +22,9 @@ public class BulletEmitter extends ObjectPool<Bullet> {
         this.tmp = new Vector2(0, 0);
     }
 
-    public void setup(float x, float y, float vx, float vy, Monster target, int damage) {
+    public void setup(BulletType type, float x, float y, float angleRed, Monster target) {
         Bullet b = getActiveElement();
-        b.setup(x, y, vx, vy, target, damage);
+        b.setup(type, x, y, angleRed, target);
     }
 
     public void render(SpriteBatch batch) {
@@ -40,12 +40,16 @@ public class BulletEmitter extends ObjectPool<Bullet> {
         for (int i = 0; i < activeList.size(); i++) {
             Bullet b = activeList.get(i);
             tmp.set(b.getVelocity());
-//            if (b.getTarget().isActive()) {
-//                tmp.set(b.getTarget().getPosition()).sub(b.getPosition()).nor().scl(150.0f);
-//            }
+            if (b.isAutoaim()){
+                if (b.getTarget().isActive()) {
+                    tmp.set(b.getTarget().getPosition()).sub(b.getPosition()).nor().scl(b.getSpeed());
+                }else{
+                    b.setAutoaim(false);
+                }
+            }
             b.getPosition().mulAdd(tmp, dt);
-            gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-25, 25), 0.1f,1.2f,0.2f,1,0,0,1,1,1,0,1);
+            gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-5, 5), 0.3f, 0.6f, 2.4f, 0, 0, 0, 1, 0, 0, 0, 0.2f);
+            gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-25, 25), 0.04f, 1.0f, 0.4f, 1, 0, 0, 1, 1, 1, 0, 1);
         }
     }
-
 }

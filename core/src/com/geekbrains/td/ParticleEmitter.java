@@ -3,6 +3,7 @@ package com.geekbrains.td;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 
@@ -10,10 +11,26 @@ import com.badlogic.gdx.utils.Pool;
  * Created by FlameXander on 02.07.2017.
  */
 public class ParticleEmitter extends ObjectPool<Particle> {
+    public class EffectBuilder {
+        public void buildMonsterSplash(float x, float y) {
+            for (int i = 0; i < 15; i++) {
+                float randomAngle = MathUtils.random(0, 6.28f);
+                float randomSpeed = MathUtils.random(0, 50.0f);
+                setup(x, y, (float) Math.cos(randomAngle) * randomSpeed, (float) Math.sin(randomAngle) * randomSpeed, 1.2f, 2.0f, 1.8f, 1, 0, 0, 1, 1, 0, 0, 0.2f);
+            }
+        }
+    }
+
     private TextureRegion oneParticle;
+    private EffectBuilder effectBuilder;
+
+    public EffectBuilder getEffectBuilder() {
+        return effectBuilder;
+    }
 
     public ParticleEmitter() {
         this.oneParticle = Assets.getInstance().getAtlas().findRegion("star16");
+        this.effectBuilder = new EffectBuilder();
     }
 
     @Override

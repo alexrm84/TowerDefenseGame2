@@ -7,8 +7,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-//    Здесь выпилили курсор, он перекочевал в GameScreen
-
 public class Map {
     private final int MAP_WIDTH = 16;
     private final int MAP_HEIGHT = 9;
@@ -17,12 +15,16 @@ public class Map {
     private final int ELEMENT_ROAD = 1;
     private final int ELEMENT_WALL = 2;
 
-    private byte[][] data;
+    private int[][] data;
     private TextureRegion textureRegionGrass;
     private TextureRegion textureRegionRoad;
 
-    public byte[][] getData() {
-        return data;
+    public Map(String mapName) {
+        data = new int[MAP_WIDTH][MAP_HEIGHT];
+
+        textureRegionGrass = Assets.getInstance().getAtlas().findRegion("grass");
+        textureRegionRoad = Assets.getInstance().getAtlas().findRegion("road");
+        loadMapFromFile(mapName);
     }
 
     public int getMAP_WIDTH() {
@@ -33,15 +35,8 @@ public class Map {
         return MAP_HEIGHT;
     }
 
-    public void restoreField(int cellX, int cellY){
-        data[cellX][cellY] = ELEMENT_GRASS;
-    }
-
-    public Map(String mapName) {
-        data = new byte[MAP_WIDTH][MAP_HEIGHT];
-        textureRegionGrass = Assets.getInstance().getAtlas().findRegion("grass");
-        textureRegionRoad = Assets.getInstance().getAtlas().findRegion("road");
-        loadMapFromFile(mapName);
+    public void setWall(int cellX, int cellY){
+        data[cellX][cellY] = ELEMENT_WALL;
     }
 
     public boolean isCellEmpty(int cellX, int cellY) {
@@ -54,11 +49,6 @@ public class Map {
         }
         return false;
     }
-
-    public void setWall(int cx, int cy) {
-        data[cx][cy] = ELEMENT_WALL;
-    }
-
 
     public void render(SpriteBatch batch) {
         for (int i = 0; i < MAP_WIDTH; i++) {
@@ -82,7 +72,7 @@ public class Map {
     }
 
     public void loadMapFromFile(String mapName) {
-        this.data = new byte[MAP_WIDTH][MAP_HEIGHT];
+        this.data = new int[MAP_WIDTH][MAP_HEIGHT];
         BufferedReader reader = null;
         try {
             reader = Gdx.files.internal("maps/" + mapName).reader(8192);

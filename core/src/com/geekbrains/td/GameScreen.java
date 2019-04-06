@@ -25,10 +25,15 @@ public class GameScreen implements Screen {
     private BulletEmitter bulletEmitter;
     private TextureRegion selectedCellTexture;
     private ParticleEmitter particleEmitter;
+    private InfoEmitter infoEmitter;
     private int selectedCellX, selectedCellY;
     private BitmapFont font24;
     private float monsterTimer;
+    private float monsterWave;
+    private float waveTimer;
+    private float level = 0;
     private Hero hero;
+    private Player player;
     private Stage stage;
     private Group groupTurretAction;
     private Group groupTurretSelection;
@@ -38,7 +43,15 @@ public class GameScreen implements Screen {
         return hero;
     }
 
+    public Player getPlayer() {
+        return player;
+    }
+
     public Map getMap(){return map;}
+
+    public float getLevel() {
+        return level;
+    }
 
     public ParticleEmitter getParticleEmitter() {
         return particleEmitter;
@@ -52,6 +65,10 @@ public class GameScreen implements Screen {
         return bulletEmitter;
     }
 
+    public InfoEmitter getInfoEmitter() {
+        return infoEmitter;
+    }
+
     public GameScreen(SpriteBatch batch) {
         this.batch = batch;
     }
@@ -59,17 +76,21 @@ public class GameScreen implements Screen {
 //    Инициализация объектов
 //    Создание интерфейса который считывает события ввода.
 
+
     @Override
     public void show() {
-        mousePosition = new Vector2(0, 0);
-        this.hero = new Hero();
+        this.hero = new Hero(this);
+        this.player = new Player();
+        this.mousePosition = new Vector2(0, 0);
         this.particleEmitter = new ParticleEmitter();
         this.font24 = Assets.getInstance().getAssetManager().get("fonts/zorque24.ttf");
         this.bulletEmitter = new BulletEmitter(this);
         this.map = new Map("level01.map");
         this.monsterEmitter = new MonsterEmitter(this);
         this.turretEmitter = new TurretEmitter(this);
+        this.infoEmitter = new InfoEmitter(this);
         this.selectedCellTexture = Assets.getInstance().getAtlas().findRegion("cursor");
+        this.monsterWave = 1;
         createGUI();
     }
 
@@ -84,17 +105,19 @@ public class GameScreen implements Screen {
         batch.draw(selectedCellTexture, selectedCellX * 80, selectedCellY * 80);
         batch.setColor(1, 1, 1, 1);
 
+
         monsterEmitter.render(batch);
         turretEmitter.render(batch);
         bulletEmitter.render(batch);
         particleEmitter.render(batch);
-        hero.renderInfo(batch, font24);
+        hero.render(batch);
+        player.renderInfo(batch, font24);
+        infoEmitter.render(batch, font24);
         batch.end();
         stage.draw();
     }
 
     public void update(float dt) {
-//        particleEmitter.setup(640, 360, MathUtils.random(-20.0f, 20.0f), MathUtils.random(20.0f, 80.0f), 0.9f, 1.0f, 0.2f, 1, 0, 0, 1, 1, 1, 0, 1);
         map.update(dt);
         monsterEmitter.update(dt);
         turretEmitter.update(dt);
@@ -102,10 +125,16 @@ public class GameScreen implements Screen {
         generateMonsters(dt);
         bulletEmitter.update(dt);
         checkCollisions();
+        infoEmitter.update(dt);
+        hero.update(dt);
+
+        nextLevel();
+
         monsterEmitter.checkPool();
         particleEmitter.checkPool();
         bulletEmitter.checkPool();
         turretEmitter.checkPool();
+        infoEmitter.checkPool();
         stage.act(dt);
     }
 
@@ -138,9 +167,11 @@ public class GameScreen implements Screen {
         textButtonStyle.font = font24;
         skin.add("simpleSkin", textButtonStyle);
 
-        groupTurretAction = new Group();
-        groupTurretAction.setPosition(150, 620);
+        Button btnMenu = new TextButton("Menu", skin, "simpleSkin");
+        btnMenu.setPosition(150, 630);
 
+        groupTurretAction = new Group();
+        groupTurretAction.setPosition(240, 620);
         Button btnSetTurret = new TextButton("Set", skin, "simpleSkin");
         Button btnUpgradeTurret = new TextButton("Upg", skin, "simpleSkin");
         Button btnDestroyTurret = new TextButton("Dst", skin, "simpleSkin");
@@ -153,7 +184,7 @@ public class GameScreen implements Screen {
 
         groupTurretSelection = new Group();
         groupTurretSelection.setVisible(false);
-        groupTurretSelection.setPosition(150, 520);
+        groupTurretSelection.setPosition(240, 520);
         Button btnSetTurret1 = new TextButton("T1", skin, "simpleSkin");
         Button btnSetTurret2 = new TextButton("T2", skin, "simpleSkin");
         btnSetTurret1.setPosition(10, 10);
@@ -161,36 +192,48 @@ public class GameScreen implements Screen {
         groupTurretSelection.addActor(btnSetTurret1);
         groupTurretSelection.addActor(btnSetTurret2);
 
+        btnMenu.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.MENU);
+
+            }
+        });
+
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                setTurret("red0");
+                turretEmitter.buildTurret(TurretType.RED, selectedCellX, selectedCellY);
+
             }
         });
 
         btnSetTurret2.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                setTurret("blue0");
+                turretEmitter.buildTurret(TurretType.BLUE, selectedCellX, selectedCellY);
             }
         });
 
         btnDestroyTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                destroyTurret(selectedCellX, selectedCellY);
+                turretEmitter.removeTurret(selectedCellX, selectedCellY);
+
             }
         });
 
         btnUpgradeTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                upgradeTurret(selectedCellX, selectedCellY);
+                turretEmitter.upgradeTurret(selectedCellX, selectedCellY);
+
             }
         });
 
         stage.addActor(groupTurretSelection);
         stage.addActor(groupTurretAction);
+        stage.addActor(btnMenu);
 
 //        upperPanel = new UpperPanel(playerInfo, stage, 0, 720 - 60);
 
@@ -203,66 +246,32 @@ public class GameScreen implements Screen {
         skin.dispose();
     }
 
-    private void upgradeTurret(int selectedCellX, int selectedCellY){
-        switch (turretEmitter.checkTheTurret(selectedCellX, selectedCellY)) {
-            case "red0":
-                if (hero.isMoneyEnough(turretEmitter.getTheCoast("red1"))) {
-                    turretEmitter.destroyTurret(selectedCellX, selectedCellY);
-                    map.restoreField(selectedCellX, selectedCellY);
-                    turretEmitter.setup(selectedCellX, selectedCellY, "red1");
-                    hero.decreaseGold(turretEmitter.getTheCoast("red1"));
-                }
-                break;
-            case "blue0":
-                if (hero.isMoneyEnough(turretEmitter.getTheCoast("blue1"))) {
-                    turretEmitter.destroyTurret(selectedCellX, selectedCellY);
-                    map.restoreField(selectedCellX, selectedCellY);
-                    turretEmitter.setup(selectedCellX, selectedCellY, "blue1");
-                    hero.decreaseGold(turretEmitter.getTheCoast("blue1"));
-                }
-                break;
-            default:
-        }
-    }
-
-    private void destroyTurret(int selectedCellX, int selectedCellY){
-        int theRemainder = turretEmitter.destroyTurret(selectedCellX, selectedCellY);
-        if (theRemainder>0){
-            hero.increaseGold(theRemainder);
-            map.restoreField(selectedCellX, selectedCellY);
-        }
-    }
-
-    public void setTurret(String type) {
-        if (hero.isMoneyEnough(turretEmitter.getTheCoast(type))) {
-            if (turretEmitter.setup(selectedCellX, selectedCellY, type)) {
-                hero.decreaseGold(turretEmitter.getTheCoast(type));
-            }
-        }
-    }
-
     public void checkCollisions() {
         for (int i = 0; i < bulletEmitter.getActiveList().size(); i++) {
-            Bullet b = bulletEmitter.getActiveList().get(i);
-            if (b.getPosition().x < 0 || b.getPosition().x > 1280 ||
-                    b.getPosition().y < 0 || b.getPosition().y > 720) {
-                b.deactivate();
+            Bullet bullet = bulletEmitter.getActiveList().get(i);
+            if (bullet.getPosition().x < 0 || bullet.getPosition().x > 1280 ||
+                    bullet.getPosition().y < 0 || bullet.getPosition().y > 720) {
+                bullet.deactivate();
                 continue;
             }
-            if (!map.isCellEmpty((int) (b.getPosition().x / 80), (int) (b.getPosition().y / 80))) {
-                b.deactivate();
+            if (!map.isCellEmpty((int) (bullet.getPosition().x / 80), (int) (bullet.getPosition().y / 80))) {
+                bullet.deactivate();
                 continue;
             }
             for (int j = 0; j < monsterEmitter.getActiveList().size(); j++) {
                 Monster monster = monsterEmitter.getActiveList().get(j);
-                if (monster.getPosition().dst(b.getPosition()) < 30){
-                    monster.takeDamage(b.getDamage());
-                    b.deactivate();
+                if (monster.getPosition().dst(bullet.getPosition()) < 50){
+                    bullet.deactivate();
+                    if (monster.takeDamage(bullet.getPower())) {
+                        player.changeGold(monster.getTheCost());
+                        player.changeScore(monster.getTheCost());
+                        particleEmitter.getEffectBuilder().buildMonsterSplash(monster.getPosition().x, monster.getPosition().y);
+                    }
                 }
             }
         }
         for (int i = 0; i < monsterEmitter.getActiveList().size(); i++) {
-            if (monsterEmitter.getActiveList().get(i).getPosition().dst(hero.getPosition())<5){
+            if (monsterEmitter.getActiveList().get(i).getPosition().dst(hero.getPosition())<20){
                 monsterEmitter.getActiveList().get(i).deactivate();
                 hero.takeDamage(monsterEmitter.getActiveList().get(i).getHp());
                 if (hero.getHp()<=0){
@@ -274,9 +283,28 @@ public class GameScreen implements Screen {
 
     public void generateMonsters(float dt) {
         monsterTimer += dt;
-        if (monsterTimer > 3.0f) {
+        waveTimer += dt;
+        if (monsterTimer > 2.0f-MathUtils.log(10, monsterWave)) {
+            for (int i = 0; i < monsterWave+1; i++) {
+                monsterEmitter.setup(15, MathUtils.random(0, 8));
+            }
             monsterTimer = 0;
-            monsterEmitter.setup(15, MathUtils.random(0, 8));
+        }
+        if (waveTimer>20){
+            monsterWave +=1;
+            waveTimer = 0;
+        }
+    }
+
+    public void nextLevel(){
+        if (monsterWave > 5){
+            level += 1;
+            this.hero = new Hero(this);
+            this.bulletEmitter = new BulletEmitter(this);
+            this.map = new Map("level01.map");
+            this.monsterEmitter = new MonsterEmitter(this);
+            this.turretEmitter = new TurretEmitter(this);
+            this.monsterWave = 1;
         }
     }
 
