@@ -67,14 +67,14 @@ public class Monster implements Poolable {
     }
 
     public void activate(float x, float y) {
-        this.texture = Assets.getInstance().getAtlas().findRegion("monster");
-        this.textureHp = Assets.getInstance().getAtlas().findRegion("monsterHp");
-        this.textureBackHp = Assets.getInstance().getAtlas().findRegion("monsterBackHP");
+//        this.texture = Assets.getInstance().getAtlas().findRegion("monster");
+//        this.textureHp = Assets.getInstance().getAtlas().findRegion("monsterHp");
+//        this.textureBackHp = Assets.getInstance().getAtlas().findRegion("monsterBackHP");
         this.position = new Vector2(x, y);
         this.velocity = new Vector2(-100.0f, 0.0f);
-        this.hpMax = 100;
+        this.hpMax = 100+(int)gameScreen.getLevel()*30;
         this.hp = this.hpMax;
-        this.theCost = 10;
+        this.theCost = 10+(int)gameScreen.getLevel();
         this.getNextPoint();
         this.active = true;
     }
@@ -104,7 +104,7 @@ public class Monster implements Poolable {
             cellsCheck(wave.peek().getX(), wave.peek().getY());
             wave.poll();
         }
-        return checkDest!=null ? new Vector2(checkDest.getPrevious().getX()*80+40,checkDest.getPrevious().getY()*80+40) : new Vector2(destX*80+40, destY*80+40);
+        return (checkDest!=null && checkDest.getPrevious()!=null) ? new Vector2(checkDest.getPrevious().getX()*80+40,checkDest.getPrevious().getY()*80+40) : new Vector2(destX*80+40, destY*80+40);
     }
 
     private void cellsCheck(int x, int y){
@@ -142,7 +142,7 @@ public class Monster implements Poolable {
     }
 
     public void update(float dt) {
-        velocity.set(destination).sub(position).nor().scl(100.0f);
+        velocity.set(destination).sub(position).nor().scl(100.0f+gameScreen.getLevel()*10);
         position.mulAdd(velocity, dt);
         if (position.dst(destination) < 2.0f) {
             getNextPoint();
