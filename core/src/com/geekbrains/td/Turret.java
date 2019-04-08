@@ -1,16 +1,14 @@
 package com.geekbrains.td;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public class Turret implements Poolable{
     private GameScreen gameScreen;
-    private TurretType type;
-    private TextureRegion texture;
-    private BulletType bulletType;
+    private String turretTemplateName;
+    private String bulletTemplateName;
     private TextureRegion[][] allTextures;
     private Vector2 position;
     private Vector2 tmp;
@@ -22,29 +20,15 @@ public class Turret implements Poolable{
     private float chargeTime;
     private float fireTime;
     private boolean active;
-    private int destroyPrice;
 
     private Monster target;
 
     public Turret(GameScreen gameScreen, TextureRegion[][] allTextures) {
-        this.type = TurretType.RED;
-        this.bulletType = BulletType.RED;
         this.gameScreen = gameScreen;
         this.allTextures = allTextures;
-        this.cellX = 8;
-        this.cellY = 4;
-        this.position = new Vector2(cellX * 80 + 40, cellY * 80 + 40);
-        this.rotationSpeed = 180.0f;
-        this.target = null;
-        this.fireRadius = 400.0f;
+        this.position = new Vector2(0, 0);
         this.tmp = new Vector2(0, 0);
-        this.chargeTime = 0.5f;
-        this.fireTime = 0.0f;
         this.active = false;
-    }
-
-    public TurretType getType() {
-        return type;
     }
 
     public void deactivate(){
@@ -59,20 +43,23 @@ public class Turret implements Poolable{
         return cellY;
     }
 
+    public String getTurretTemplateName() {
+        return turretTemplateName;
+    }
+
     @Override
     public boolean isActive() {
         return active;
     }
 
-    public void setup(TurretType type, int cellX, int cellY){
-        this.type = type;
-        this.destroyPrice = type.destroyPrice;
-        this.bulletType = type.bulletType;
-        this.imageX = type.image_x;
-        this.imageY = type.image_y;
-        this.fireRadius = type.fireRadius;
-        this.rotationSpeed = type.rotationSpeed;
-        this.chargeTime = type.chargeTime;
+    public void setup(TurretTemplate template, int cellX, int cellY){
+        this.turretTemplateName = template.getName();
+        this.bulletTemplateName = template.getBulletName();
+        this.imageX = template.getImageX();
+        this.imageY = template.getImageY();
+        this.fireRadius = template.getFireRadius();
+        this.rotationSpeed = template.getRotationSpeed();
+        this.chargeTime = template.getChargeTime();
         this.cellX = cellX;
         this.cellY = cellY;
         this.position.set(cellX * 80 + 40, cellY * 80 + 40);
@@ -145,9 +132,8 @@ public class Turret implements Poolable{
         if (fireTime > chargeTime) {
             fireTime = 0.0f;
             float angleRadian = (float)Math.toRadians(angle) + MathUtils.random(-0.2f, 0.2f);
-            gameScreen.getBulletEmitter().setup(bulletType, position.x + 32 * (float)Math.cos(angleRadian), position.y + 32 * (float)Math.sin(angleRadian), angleRadian, target);
+            gameScreen.getBulletEmitter().setup(bulletTemplateName, position.x + 32 * (float)Math.cos(angleRadian), position.y + 32 * (float)Math.sin(angleRadian), angleRadian, target);
         }
     }
-
 
 }

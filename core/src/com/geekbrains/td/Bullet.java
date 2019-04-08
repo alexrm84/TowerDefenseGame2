@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bullet implements Poolable {
 
-    private BulletType type;
     private Monster target;
     private Vector2 position;
     private Vector2 velocity;
@@ -52,20 +51,19 @@ public class Bullet implements Poolable {
     }
 
     public Bullet() {
-        this.type = BulletType.RED;
         this.position = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
         this.active = false;
     }
 
-    public void setup(BulletType type, float x, float y, float angleRad, Monster target) {
-        this.type = type;
-        this.speed = type.speed;
-        this.power = type.power;
-        this.autoaim = type.autoaim;
+    public void setup(BulletTemplate bulletTemplate, Monster target, float x, float y, float angleRad) {
+        this.speed = bulletTemplate.getSpeed();
+        this.power = bulletTemplate.getPower();
+        this.autoaim = bulletTemplate.isAutoaim();
         this.target = target;
         this.position.set(x, y);
-        this.velocity.set(speed*(float)Math.cos(angleRad), speed * (float)Math.sin(angleRad));
+        this.velocity.set(speed * (float)Math.cos(angleRad), speed * (float)Math.sin(angleRad));
         this.active = true;
+
     }
 }

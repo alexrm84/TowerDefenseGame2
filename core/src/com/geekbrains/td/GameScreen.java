@@ -28,6 +28,7 @@ public class GameScreen implements Screen {
     private InfoEmitter infoEmitter;
     private int selectedCellX, selectedCellY;
     private BitmapFont font24;
+    private BitmapFont font18;
     private float monsterTimer;
     private float monsterWave;
     private float waveTimer;
@@ -84,6 +85,7 @@ public class GameScreen implements Screen {
         this.mousePosition = new Vector2(0, 0);
         this.particleEmitter = new ParticleEmitter();
         this.font24 = Assets.getInstance().getAssetManager().get("fonts/zorque24.ttf");
+        this.font18 = Assets.getInstance().getAssetManager().get("fonts/zorque18.ttf");
         this.bulletEmitter = new BulletEmitter(this);
         this.map = new Map("level01.map");
         this.monsterEmitter = new MonsterEmitter(this);
@@ -91,7 +93,7 @@ public class GameScreen implements Screen {
         this.infoEmitter = new InfoEmitter(this);
         this.selectedCellTexture = Assets.getInstance().getAtlas().findRegion("cursor");
         this.monsterWave = 1;
-        createGUI();
+        this.createGUI();
     }
 
     @Override
@@ -110,7 +112,7 @@ public class GameScreen implements Screen {
         turretEmitter.render(batch);
         bulletEmitter.render(batch);
         particleEmitter.render(batch);
-        hero.render(batch);
+        hero.render(batch, font18);
         player.renderInfo(batch, font24);
         infoEmitter.render(batch, font24);
         batch.end();
@@ -203,7 +205,7 @@ public class GameScreen implements Screen {
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(TurretType.RED, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(player, "Red-Turret-I", selectedCellX, selectedCellY);
 
             }
         });
@@ -211,14 +213,14 @@ public class GameScreen implements Screen {
         btnSetTurret2.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(TurretType.BLUE, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(player, "Blue-Turret-I", selectedCellX, selectedCellY);
             }
         });
 
         btnDestroyTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.removeTurret(selectedCellX, selectedCellY);
+                turretEmitter.removeTurret(player, selectedCellX, selectedCellY);
 
             }
         });
@@ -226,7 +228,7 @@ public class GameScreen implements Screen {
         btnUpgradeTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.upgradeTurret(selectedCellX, selectedCellY);
+                turretEmitter.upgradeTurret(player, selectedCellX, selectedCellY);
 
             }
         });

@@ -1,11 +1,7 @@
 package com.geekbrains.td;
 
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.*;
@@ -136,7 +132,7 @@ public class Monster implements Poolable {
         this.hp-=damage;
         if (this.hp<=0){
             this.deactivate();
-            gameScreen.getInfoEmitter().setup(position.x * 80 + 40, position.y * 80 + 40, "+" + theCost);
+            gameScreen.getInfoEmitter().setup(position.x+10, position.y, "+" + theCost);
             return true;
         }
         return false;
