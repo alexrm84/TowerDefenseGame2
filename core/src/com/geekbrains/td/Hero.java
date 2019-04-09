@@ -34,7 +34,8 @@ public class Hero {
         batch.draw(texture[index], position.x - 40, position.y - 40);
         batch.setColor(1, 1, 1, 0.8f);
         batch.draw(textureBackHp, position.x - 30, position.y + 50 - 16);
-        batch.draw(textureHp, position.x - 30 + 2, position.y + 50 - 14, 56 * ((float) hp / maxHP), 12);font.draw(batch, "" + hp, position.x - 30, position.y + 52 + 4 * (float) Math.sin(animationTimer * 5), 60, 1, false);
+        batch.draw(textureHp, position.x - 30 + 2, position.y + 50 - 14, 56 * ((float) hp / maxHP), 12);
+        font.draw(batch, "" + hp, position.x - 30, position.y + 52 + 4 * (float) Math.sin(animationTimer * 5), 60, 1, false);
         batch.setColor(1, 1, 1, 1);
 
 

@@ -1,7 +1,7 @@
 package com.geekbrains.td;
 
 public class TurretTemplate {
-    // # name, image_x, image_y, price, fireRadius, chargeTime, rotationSpeed, childName, bulletName
+    // # name, image_x, image_y, price, fireRadius, chargeTime, rotationSpeed, childName, bulletName, maxHP
     private String name;
     private int imageX, imageY;
     private int price;
@@ -10,6 +10,11 @@ public class TurretTemplate {
     private float rotationSpeed;
     private String childName;
     private String bulletName;
+    private int maxHP;
+
+    public int getMaxHP() {
+        return maxHP;
+    }
 
     public String getName() {
         return name;
@@ -58,5 +63,6 @@ public class TurretTemplate {
         rotationSpeed = Float.parseFloat(tokens[6].trim());
         childName = tokens[7].trim();
         bulletName = tokens[8].trim();
+        maxHP = Integer.parseInt(tokens[9].trim());
     }
 }

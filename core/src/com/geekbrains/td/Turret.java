@@ -19,6 +19,10 @@ public class Turret implements Poolable{
     private float fireRadius;
     private float chargeTime;
     private float fireTime;
+    private int maxHP;
+    private int currentHP;
+    private TextureRegion textureHp;
+    private TextureRegion textureBackHp;
     private boolean active;
 
     private Monster target;
@@ -28,6 +32,8 @@ public class Turret implements Poolable{
         this.allTextures = allTextures;
         this.position = new Vector2(0, 0);
         this.tmp = new Vector2(0, 0);
+        this.textureHp = Assets.getInstance().getAtlas().findRegion("monsterHp");
+        this.textureBackHp = Assets.getInstance().getAtlas().findRegion("monsterBackHP");
         this.active = false;
     }
 
@@ -64,10 +70,15 @@ public class Turret implements Poolable{
         this.cellY = cellY;
         this.position.set(cellX * 80 + 40, cellY * 80 + 40);
         this.active = true;
+        this.maxHP = template.getMaxHP();
+        this.currentHP = maxHP;
+
     }
 
     public void render(SpriteBatch batch) {
         batch.draw(allTextures[imageY][imageX], cellX * 80, cellY * 80, 40, 40, 80, 80, 1, 1, angle);
+        batch.draw(textureBackHp, cellX * 80+10, cellY * 80+60);
+        batch.draw(textureHp, cellX * 80+10, cellY * 80+60, 56 * ((float) currentHP / maxHP), 14);
     }
 
     public void update(float dt) {
@@ -133,6 +144,13 @@ public class Turret implements Poolable{
             fireTime = 0.0f;
             float angleRadian = (float)Math.toRadians(angle) + MathUtils.random(-0.2f, 0.2f);
             gameScreen.getBulletEmitter().setup(bulletTemplateName, position.x + 32 * (float)Math.cos(angleRadian), position.y + 32 * (float)Math.sin(angleRadian), angleRadian, target);
+        }
+    }
+
+    public void takeDamage(int damage){
+        currentHP -= damage;
+        if (currentHP <= 0){
+            deactivate();
         }
     }
 
