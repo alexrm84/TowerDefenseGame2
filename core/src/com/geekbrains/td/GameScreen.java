@@ -28,6 +28,7 @@ public class GameScreen implements Screen {
     private InfoEmitter infoEmitter;
     private int selectedCellX, selectedCellY;
     private BitmapFont font24;
+    private BitmapFont font18;
     private float monsterTimer;
     private float monsterWave;
     private float waveTimer;
@@ -65,6 +66,10 @@ public class GameScreen implements Screen {
         return bulletEmitter;
     }
 
+    public TurretEmitter getTurretEmitter() {
+        return turretEmitter;
+    }
+
     public InfoEmitter getInfoEmitter() {
         return infoEmitter;
     }
@@ -84,6 +89,7 @@ public class GameScreen implements Screen {
         this.mousePosition = new Vector2(0, 0);
         this.particleEmitter = new ParticleEmitter();
         this.font24 = Assets.getInstance().getAssetManager().get("fonts/zorque24.ttf");
+        this.font18 = Assets.getInstance().getAssetManager().get("fonts/zorque18.ttf");
         this.bulletEmitter = new BulletEmitter(this);
         this.map = new Map("level01.map");
         this.monsterEmitter = new MonsterEmitter(this);
@@ -91,7 +97,7 @@ public class GameScreen implements Screen {
         this.infoEmitter = new InfoEmitter(this);
         this.selectedCellTexture = Assets.getInstance().getAtlas().findRegion("cursor");
         this.monsterWave = 1;
-        createGUI();
+        this.createGUI();
     }
 
     @Override
@@ -110,7 +116,7 @@ public class GameScreen implements Screen {
         turretEmitter.render(batch);
         bulletEmitter.render(batch);
         particleEmitter.render(batch);
-        hero.render(batch);
+        hero.render(batch, font18);
         player.renderInfo(batch, font24);
         infoEmitter.render(batch, font24);
         batch.end();
@@ -203,7 +209,7 @@ public class GameScreen implements Screen {
         btnSetTurret1.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(TurretType.RED, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(player, "Red-Turret-I", selectedCellX, selectedCellY);
 
             }
         });
@@ -211,14 +217,14 @@ public class GameScreen implements Screen {
         btnSetTurret2.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.buildTurret(TurretType.BLUE, selectedCellX, selectedCellY);
+                turretEmitter.buildTurret(player, "Blue-Turret-I", selectedCellX, selectedCellY);
             }
         });
 
         btnDestroyTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.removeTurret(selectedCellX, selectedCellY);
+                turretEmitter.removeTurret(player, selectedCellX, selectedCellY);
 
             }
         });
@@ -226,7 +232,7 @@ public class GameScreen implements Screen {
         btnUpgradeTurret.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                turretEmitter.upgradeTurret(selectedCellX, selectedCellY);
+                turretEmitter.upgradeTurret(player, selectedCellX, selectedCellY);
 
             }
         });
@@ -271,12 +277,18 @@ public class GameScreen implements Screen {
             }
         }
         for (int i = 0; i < monsterEmitter.getActiveList().size(); i++) {
-            if (monsterEmitter.getActiveList().get(i).getPosition().dst(hero.getPosition())<20){
-                monsterEmitter.getActiveList().get(i).deactivate();
-                hero.takeDamage(monsterEmitter.getActiveList().get(i).getHp());
+            Monster monster = monsterEmitter.getActiveList().get(i);
+            if (monster.getPosition().dst(hero.getPosition())<20){
+                monster.deactivate();
+                hero.takeDamage(monster.getHp());
                 if (hero.getHp()<=0){
                     this.show();
                 }
+            }
+            if (monster.isBomb() && monster.getPosition().dst(monster.getTarget())<10){
+                monster.explosion();
+                particleEmitter.getEffectBuilder().explosion(monster.getPosition().x, monster.getPosition().y);
+                monster.deactivate();
             }
         }
     }

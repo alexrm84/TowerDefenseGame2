@@ -1,17 +1,25 @@
 package com.geekbrains.td;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.HashMap;
 
 public class TurretEmitter extends ObjectPool<Turret> {
     private GameScreen gameScreen;
     private TextureRegion[][] allTextures;
     private Player player;
+    private HashMap<String, TurretTemplate> templates;
 
     public TurretEmitter(GameScreen gameScreen) {
         this.gameScreen = gameScreen;
         this.player = gameScreen.getPlayer();
         this.allTextures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("turrets")).split(80, 80);
+        this.templates = new HashMap<String, TurretTemplate>();
+        this.loadTemplates();
     }
 
     @Override
@@ -19,49 +27,52 @@ public class TurretEmitter extends ObjectPool<Turret> {
         return new Turret(gameScreen, allTextures);
     }
 
-    public boolean setup(TurretType type, int cellX, int cellY) {
+    public boolean setup(String turretTemplateName, int cellX, int cellY) {
         if (!canIDeployItHere(cellX, cellY)) {
             return false;
         }
         Turret turret = getActiveElement();
-        turret.setup(type, cellX, cellY);
+        turret.setup(templates.get(turretTemplateName), cellX, cellY);
         return true;
     }
 
-    public void buildTurret(TurretType type, int cellX, int cellY){
-        if (player.isMoneyEnough(type.price)){
-            if (setup(type,cellX,cellY)){
-                player.changeGold(-type.price);
-                gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + type.price);
+    public void buildTurret(Player player, String turretTemplateName, int cellX, int cellY) {
+        TurretTemplate turretTemplate = templates.get(turretTemplateName);
+        if (player.isMoneyEnough(turretTemplate.getPrice())) {
+            if (setup(turretTemplate.getName(), cellX, cellY)) {
+                player.changeGold(-turretTemplate.getPrice());
+                gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + turretTemplate.getPrice());
             }
         }
     }
 
-    public void upgradeTurret(int cellX, int cellY){
+    public void upgradeTurret(Player player, int cellX, int cellY) {
         Turret turretForUpgrade = findTurretInCell(cellX, cellY);
-        if (turretForUpgrade == null){
+        if (turretForUpgrade == null) {
             return;
         }
-        TurretType nextLevel = turretForUpgrade.getType().child;
-        if (nextLevel == null){
+        TurretTemplate currentTurretTemplate = templates.get(turretForUpgrade.getTurretTemplateName());
+        if (currentTurretTemplate.getChildName().equals("-")) {
             gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "[ERROR] Top turret");
             return;
         }
-        if (player.isMoneyEnough(nextLevel.price)){
-            turretForUpgrade.setup(nextLevel, cellX, cellY);
-            player.changeGold(-nextLevel.price);
-            gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + nextLevel.price);
+        TurretTemplate nextLevelTurretTemplate = templates.get(currentTurretTemplate.getChildName());
+        if (player.isMoneyEnough(nextLevelTurretTemplate.getPrice())) {
+            turretForUpgrade.setup(nextLevelTurretTemplate, cellX, cellY);
+            player.changeGold(-nextLevelTurretTemplate.getPrice());
+            gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "-" + nextLevelTurretTemplate.getPrice());
         }
     }
 
-    public void removeTurret(int cellX, int cellY){
+    public void removeTurret(Player player, int cellX, int cellY) {
         Turret turretForDelete = findTurretInCell(cellX, cellY);
-        if (turretForDelete == null){
+        if (turretForDelete == null) {
             return;
         }
         turretForDelete.deactivate();
-        player.changeGold(turretForDelete.getType().destroyPrice);
-        gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "+" + turretForDelete.getType().destroyPrice);
+        TurretTemplate turretTemplate = templates.get(turretForDelete.getTurretTemplateName());
+        player.changeGold(turretTemplate.getPrice() / 2);
+        gameScreen.getInfoEmitter().setup(cellX * 80 + 40, cellY * 80 + 40, "+" + (turretTemplate.getPrice() / 2));
     }
 
     public void render(SpriteBatch batch) {
@@ -99,4 +110,35 @@ public class TurretEmitter extends ObjectPool<Turret> {
         }
         return null;
     }
+
+    public void loadTemplates() {
+        BufferedReader reader = null;
+        try {
+            reader = Gdx.files.internal("armory.dat").reader(8192);
+            String str;
+            boolean reading = false;
+            while ((str = reader.readLine()) != null) {
+                if (str.equals("# turrets-start")) {
+                    reading = true;
+                    continue;
+                }
+                if (reading && str.equals("# turrets-end")) {
+                    break;
+                }
+                if (reading) {
+                    TurretTemplate turretTemplate = new TurretTemplate(str);
+                    templates.put(turretTemplate.getName(), turretTemplate);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

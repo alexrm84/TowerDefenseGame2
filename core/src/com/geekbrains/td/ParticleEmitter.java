@@ -17,6 +17,14 @@ public class ParticleEmitter extends ObjectPool<Particle> {
                 float randomAngle = MathUtils.random(0, 6.28f);
                 float randomSpeed = MathUtils.random(0, 50.0f);
                 setup(x, y, (float) Math.cos(randomAngle) * randomSpeed, (float) Math.sin(randomAngle) * randomSpeed, 1.2f, 2.0f, 1.8f, 1, 0, 0, 1, 1, 0, 0, 0.2f);
+                }
+        }
+        public void explosion(float x, float y) {
+            for (int i = 0; i < 50; i++) {
+                float randomAngle = MathUtils.random(0, 6.28f);
+                float randomSpeed = MathUtils.random(0, 50.0f);
+                setup(x, y, (float) Math.cos(randomAngle) * randomSpeed, (float) Math.sin(randomAngle) * randomSpeed, 1.0f, 2.0f, 1.0f, 1, 0, 0, 1, 1, 0, 0, 0.3f);
+                setup(x, y, (float) Math.cos(randomAngle) * randomSpeed, (float) Math.sin(randomAngle) * randomSpeed, 1.6f, 0.0f, 1.4f, 0, 0, 0, 1, 0, 0, 0, 0.9f);
             }
         }
     }
