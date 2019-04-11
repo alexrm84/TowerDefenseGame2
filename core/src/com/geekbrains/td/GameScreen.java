@@ -66,6 +66,10 @@ public class GameScreen implements Screen {
         return bulletEmitter;
     }
 
+    public TurretEmitter getTurretEmitter() {
+        return turretEmitter;
+    }
+
     public InfoEmitter getInfoEmitter() {
         return infoEmitter;
     }
@@ -273,12 +277,18 @@ public class GameScreen implements Screen {
             }
         }
         for (int i = 0; i < monsterEmitter.getActiveList().size(); i++) {
-            if (monsterEmitter.getActiveList().get(i).getPosition().dst(hero.getPosition())<20){
-                monsterEmitter.getActiveList().get(i).deactivate();
-                hero.takeDamage(monsterEmitter.getActiveList().get(i).getHp());
+            Monster monster = monsterEmitter.getActiveList().get(i);
+            if (monster.getPosition().dst(hero.getPosition())<20){
+                monster.deactivate();
+                hero.takeDamage(monster.getHp());
                 if (hero.getHp()<=0){
                     this.show();
                 }
+            }
+            if (monster.isBomb() && monster.getPosition().dst(monster.getTarget())<10){
+                monster.explosion();
+                particleEmitter.getEffectBuilder().explosion(monster.getPosition().x, monster.getPosition().y);
+                monster.deactivate();
             }
         }
     }

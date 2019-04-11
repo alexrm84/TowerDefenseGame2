@@ -41,6 +41,10 @@ public class Turret implements Poolable{
         this.active = false;
     }
 
+    public Vector2 getPosition() {
+        return position;
+    }
+
     public int getCellX() {
         return cellX;
     }

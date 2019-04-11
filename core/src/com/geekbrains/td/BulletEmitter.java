@@ -58,7 +58,7 @@ public class BulletEmitter extends ObjectPool<Bullet> {
             }
             b.getPosition().mulAdd(tmp, dt);
             gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-5, 5), 0.3f, 0.6f, 2.4f, 0, 0, 0, 1, 0, 0, 0, 0.2f);
-            gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-25, 25), 0.04f, 1.0f, 0.4f, 1, 0, 0, 1, 1, 1, 0, 1);
+            gameScreen.getParticleEmitter().setup(b.getPosition().x, b.getPosition().y, MathUtils.random(-25, 25), MathUtils.random(-25, 25), 0.04f, 1.0f, 0.4f, 1, 0, 0, 1, 1, 1, 0, 0.5f);
         }
     }
 

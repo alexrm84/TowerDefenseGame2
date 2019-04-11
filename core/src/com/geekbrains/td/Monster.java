@@ -2,6 +2,7 @@ package com.geekbrains.td;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.*;
@@ -17,10 +18,12 @@ public class Monster implements Poolable {
     private Vector2 position;
     private Vector2 destination;
     private Vector2 velocity;
+    private Vector2 target;
 
     private int hp;
     private int hpMax;
     private int theCost;
+    private boolean bomb;
 
     private boolean active;
 
@@ -36,10 +39,12 @@ public class Monster implements Poolable {
         this.position = new Vector2(640, 360);
         this.destination = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
+        this.target = new Vector2(0, 0);
         this.hpMax = 100;
         this.hp = this.hpMax;
-        this.theCost = 10;
+        this.theCost = 20;
         this.active = false;
+        this.bomb = false;
         this.hero = gameScreen.getHero();
         this.mass = new int[map.getMAP_WIDTH()][map.getMAP_HEIGHT()];
         this.wave = new LinkedList<>();
@@ -48,6 +53,14 @@ public class Monster implements Poolable {
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isBomb() {
+        return bomb;
+    }
+
+    public Vector2 getTarget() {
+        return target;
     }
 
     public Vector2 getPosition() {
@@ -66,11 +79,17 @@ public class Monster implements Poolable {
 //        this.texture = Assets.getInstance().getAtlas().findRegion("monster");
 //        this.textureHp = Assets.getInstance().getAtlas().findRegion("monsterHp");
 //        this.textureBackHp = Assets.getInstance().getAtlas().findRegion("monsterBackHP");
+        if (MathUtils.random(0, 100)<=5+ gameScreen.getLevel()){
+            this.bomb = true;
+            this.hpMax = 300+(int)gameScreen.getLevel()*80;
+            this.theCost = 50+(int)gameScreen.getLevel()*2;
+        }else {
+            this.hpMax = 100+(int)gameScreen.getLevel()*30;
+            this.theCost = 20+(int)gameScreen.getLevel();
+        }
         this.position = new Vector2(x, y);
         this.velocity = new Vector2(-100.0f, 0.0f);
-        this.hpMax = 100+(int)gameScreen.getLevel()*30;
         this.hp = this.hpMax;
-        this.theCost = 10+(int)gameScreen.getLevel();
         this.getNextPoint();
         this.active = true;
     }
@@ -86,7 +105,23 @@ public class Monster implements Poolable {
             }
         }
         wave.clear();
-        destination.set(waveMethod((int)hero.getPosition().x/80,(int)hero.getPosition().y/80, (int)position.x/80, (int)position.y/80));
+        this.target = hero.getPosition();
+        if (this.bomb){
+            setTarget();
+        }
+        destination.set(waveMethod((int)target.x/80,(int)target.y/80, (int)position.x/80, (int)position.y/80));
+    }
+
+    private void setTarget(){
+        Turret turret;
+        float tempDst=1280;
+        for (int i = 0; i < gameScreen.getTurretEmitter().activeList.size(); i++) {
+            turret = gameScreen.getTurretEmitter().activeList.get(i);
+            if (turret.getPosition().dst(this.position)<tempDst){
+                tempDst = turret.getPosition().dst(this.position);
+                target = turret.getPosition();
+            }
+        }
     }
 
     private Vector2 waveMethod(int sourceX, int sourceY, int destX, int destY){
@@ -136,6 +171,21 @@ public class Monster implements Poolable {
             return true;
         }
         return false;
+    }
+
+    public void explosion(){
+        Turret turret;
+        for (int i = 0; i < gameScreen.getTurretEmitter().activeList.size(); i++) {
+            turret = gameScreen.getTurretEmitter().activeList.get(i);
+            if (turret.getPosition().dst(this.position)>100){
+                continue;
+            }
+            if (turret.getPosition().dst(this.position)<=40){
+                turret.takeDamage(200);
+            }else {
+                turret.takeDamage(100);
+            }
+        }
     }
 
     public void update(float dt) {
